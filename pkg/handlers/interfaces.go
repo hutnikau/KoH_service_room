@@ -7,3 +7,7 @@ type RoomRepository interface {
 	CreateRoom(room model.Room) (model.Room, error)
 	GetRoomsByUserId(userId string) ([]model.Room, error)
 }
+
+type UserRepository interface {
+	GetUserById(id string) (model.User, error)
+}

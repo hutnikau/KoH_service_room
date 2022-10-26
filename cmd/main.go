@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"service-room/pkg/handlers"
 	"service-room/pkg/infrastructure"
@@ -26,9 +25,8 @@ func handler(req events.APIGatewayV2HTTPRequest) (*events.APIGatewayV2HTTPRespon
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
 	roomRepo := infrastructure.DynamodbRoomRepository{}
-	h := handlers.NewHandler(roomRepo)
-
-	fmt.Printf("%+v\n", req)
+	userRepo := infrastructure.NewUserRepository()
+	h := handlers.NewHandler(roomRepo, userRepo)
 
 	switch req.RequestContext.RouteKey {
 	case "GET /room":
@@ -36,12 +34,13 @@ func handler(req events.APIGatewayV2HTTPRequest) (*events.APIGatewayV2HTTPRespon
 		_ = json.Unmarshal([]byte(req.Body), &room)
 
 		if id, ok := req.QueryStringParameters["id"]; ok {
-			return h.GetUserRooms(id)
+			return h.GetRoom(id)
 		}
 	case "GET /user/{id}/rooms":
-		if userId, ok := req.PathParameters["userId"]; ok {
-			return h.GetRoom(userId)
+		if userId, ok := req.PathParameters["id"]; ok {
+			return h.GetUserRooms(userId)
 		}
+
 	case "POST /room":
 		room := model.Room{}
 		_ = json.Unmarshal([]byte(req.Body), &room)
